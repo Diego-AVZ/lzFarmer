@@ -1,0 +1,1 @@
+`npm run createAccounts -- 4`
