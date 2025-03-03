@@ -1,4 +1,8 @@
 import { ethers } from "ethers";
+import fs from 'fs';
+import path from 'path';
+
+const filePath = path.join(__dirname, '../constants/wallets.json');
 
 const pks: string[] = [];
 const addresses: string[] = [];
@@ -12,6 +16,11 @@ function createEthereumAccount(accountNumber: number): void {
     console.log("     · ADDRESS : ", wallet.address);
     console.log("     · PRIVATE_KEY : ", wallet.privateKey);
     */
+    const rawData = fs.readFileSync(filePath, 'utf8');
+    let json = rawData ? JSON.parse(rawData) : { addresses: [], privateKeys: [] };
+    json.addresses.push(wallet.address);
+    json.privateKeys.push(wallet.privateKey);
+    fs.writeFileSync(filePath, JSON.stringify(json, null, 2), 'utf8');
 }
 
 export function createAccounts(accounts: number): void {
