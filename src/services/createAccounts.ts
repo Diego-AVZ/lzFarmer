@@ -7,9 +7,11 @@ function createEthereumAccount(accountNumber: number): void {
     const wallet = ethers.Wallet.createRandom();
     pks.push(wallet.privateKey);
     addresses.push(wallet.address);
+    /*
     console.log("ACCOUNT ", accountNumber, " : ");
     console.log("     · ADDRESS : ", wallet.address);
     console.log("     · PRIVATE_KEY : ", wallet.privateKey);
+    */
 }
 
 export function createAccounts(accounts: number): void {
@@ -21,12 +23,19 @@ export function createAccounts(accounts: number): void {
 
 function logCodeWallets() {
     console.log("Paste this in your .env file : ");
-    for(let i = 0; i < pks.length; i++){
-        console.log("PRIVATE_KEY_" + i + " = " + pks[i]);
-    }
+    console.log();
+    console.log("PRIVATE_KEY = " + pks);
+    console.log();
     console.log("Paste this in your constants file : ");
+    console.log();
+    console.log("export const ADDRESSES:string[] = [");
     for(let i = 0; i < pks.length; i++){
-        console.log("export const ADDRESS" + i + " = " + addresses[i]);
+        if(i < pks.length - 1){
+            console.log("   '" + addresses[i] + "',");
+        } else {
+            console.log("   '" + addresses[i] + "'");
+            console.log("]");
+        }
     }
 }
 

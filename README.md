@@ -1,1 +1,1 @@
-`npm run createAccounts -- 4`
+`npm run createAccounts -- X` -> X == Accounts to Create 
