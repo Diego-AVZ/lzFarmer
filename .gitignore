@@ -5,3 +5,4 @@
 .env
 
 /src/constants/wallets.json
+wallets.json
