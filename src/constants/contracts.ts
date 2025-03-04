@@ -5,13 +5,23 @@ const STARGATE2 = {
 
 const STARGATE = [
     {
-        chain : "linea",
-        address : "0x81F6138153d473E8c5EcebD3DC8Cd4903506B075"
+        chain : "sepolia",
+        address : "0x9Cc7e185162Aa5D1425ee924D97a87A0a34A0706", 
+        eId : 40161
     },
     {
-        chain : "sepolia",
-        address : "0x9Cc7e185162Aa5D1425ee924D97a87A0a34A0706",
-        eId : 40161
+        chain : "arbSepolia",
+        address : "0x6fddB6270F6c71f31B62AE0260cfa8E2e2d186E0",
+        eId : 40231
+    },
+    {
+        chain : "optSepolia",
+        address : "0xa31dCc5C71E25146b598bADA33E303627D7fC97e",
+        eId : 40232
+    },
+    {
+        chain : "linea",
+        address : "0x81F6138153d473E8c5EcebD3DC8Cd4903506B075"
     }
 ];
 
