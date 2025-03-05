@@ -1,12 +1,13 @@
 import {createAccounts} from "./services/createAccounts";
 import { PROVIDERS } from "./constants/providers";
 import { STARGATE } from "./constants/contracts";
-import { checkEtherBalance, waitForFunding } from "./services/checkBalances";
-import { stargateTransfer, calculateMaxValue } from "./services/stargateTransfers";
+import { waitForFunding } from "./services/checkBalances";
+import { stargateTransfer, calculateMaxValue, getNativeFee } from "./services/stargateTransfers";
 import { SendParam, MessagingFee } from "./services/stargateTransfers";
 import { ethers } from "./services/ethersService";
 import fs from 'fs';
 import path from 'path';
+import { loggerTransfer } from "./services/logger";
 
 const filePath = path.join(__dirname, './constants/wallets.json');
 const wallets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -17,11 +18,11 @@ const wallets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 /*_________________________________________*/
 const CREATE_ACCOUNTS = false;
 const SIMULATE_HUMAN_TXS  = false;
-const INITIAL_CHAIN = 1;
-const DEST_CHAIN =  0;
+let chainFrom = 1;
+let chainTo =  2;
 /*_________________________________________*/
 
-let account = 3;
+let account = 1;
 const MAIN_ACCOUNT = {
     address :  wallets.addresses[account],
     privKey : wallets.privateKeys[account]
@@ -84,7 +85,6 @@ async function mainStargateTransfer(
     _value: bigint
 ) {
     const networkData = searchNetwork(network);
-    //let accountBalance = (await checkEtherBalance(MAIN_ACCOUNT.address, networkData.prov)).balance;
     await stargateTransfer(
         networkData.prov,
         privateKey,
@@ -96,32 +96,49 @@ async function mainStargateTransfer(
     );
 }
 
+function changeChains() {
+    let a = chainFrom;
+    let b = chainTo;
+    chainFrom = b;
+    chainTo = a;
+}
+
 async function main() {
+    while(true){
     try {
-        const networkData = searchNetwork(INITIAL_CHAIN);
-        //formatPrivateKeys();
-        await waitForFunding(MAIN_ACCOUNT.address, networkData.prov);
+        const networkData = searchNetwork(chainFrom);
+        await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
+        const nativeFee = await getNativeFee(
+            networkData.prov,
+            MAIN_ACCOUNT.privKey,
+            networkData.stargateAddress,
+            MAIN_ACCOUNT.address,
+            prepareSendParam(1000n,chainTo),
+        );
         const valueData = await calculateMaxValue(
             networkData.prov,
             MAIN_ACCOUNT.privKey,
             networkData.stargateAddress,
-            prepareSendParam(BigInt(1000),DEST_CHAIN),
-            prepareFeeParams(1000n),
+            prepareSendParam(1000000000000000n,chainTo),
+            prepareFeeParams(nativeFee),
             MAIN_ACCOUNT.address,
             1n
         )
-        
+        loggerTransfer(chainFrom,chainTo);
         await mainStargateTransfer(
-            INITIAL_CHAIN,
+            chainFrom,
             MAIN_ACCOUNT.privKey,
-            prepareSendParam(valueData.amountLD,DEST_CHAIN),
+            prepareSendParam(valueData.amountLD,chainTo),
             prepareFeeParams(valueData.requiredFee),
             MAIN_ACCOUNT.address,
             valueData.maxValue
         );
+        changeChains();
     } catch(error) {
         console.error("ERROR ", error);
     }
+    await new Promise(resolve => setTimeout(resolve, 10000)); 
+}
 }
 
 main();
@@ -129,4 +146,5 @@ main();
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]
 npm run start
+136774035857932n
 */

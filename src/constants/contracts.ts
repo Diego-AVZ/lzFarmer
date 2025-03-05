@@ -10,12 +10,12 @@ const STARGATE = [
         eId : 40161
     },
     {
-        chain : "arbSepolia",
+        chain : "Arbitrum Sepolia",
         address : "0x6fddB6270F6c71f31B62AE0260cfa8E2e2d186E0",
         eId : 40231
     },
     {
-        chain : "optSepolia",
+        chain : "Optimism Sepolia",
         address : "0xa31dCc5C71E25146b598bADA33E303627D7fC97e",
         eId : 40232
     },

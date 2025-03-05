@@ -86,14 +86,13 @@ export async function calculateMaxValue(
                 sendParam,
                 fee,
                 toAddress,
-                { value: 10000 }
+                { value: sendParam.amountLD + fee.nativeFee }
             );
         } catch (estimateError) {
-            console.warn("egasEstimation failed");
+            console.warn("gasEstimation failed");
             gasEstimate = 450000n;
         }
         const gasLimit = BigInt(Math.ceil(Number(gasEstimate) * 1.2));
-        
         const feeData = await provider.getFeeData();
         const gasPrice = feeData.gasPrice * 2n; 
         const gasCostInWei = gasPrice * gasLimit;
@@ -104,7 +103,7 @@ export async function calculateMaxValue(
             [sendParam.dstEid, to, estimatedAmountLD, sendParam.minAmountLD, "0x", "0x", "0x"],
             false
         );
-        const buffer = 1n * 10n**15n;
+        const buffer = 1n * 10n**16n;
         const amountToSend = balance - nativeFee[0] - gasCostInWei - buffer;
         const maxValue = amountToSend + nativeFee[0];
         /*
@@ -123,4 +122,22 @@ export async function calculateMaxValue(
         console.error("Calculate Max Value Error:", error);
         throw error;
     }
+}
+
+export async function getNativeFee(
+    prov:string,
+    privateKey:string,
+    stargateAddress:string,
+    toAddress: string,
+    sendParam: SendParam
+): Promise <bigint>{
+    const provider = new ethers.JsonRpcProvider(prov);
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const contract = new ethers.Contract(stargateAddress, STARGATE_ABI, wallet);
+    const to = ethers.zeroPadValue(toAddress, 32);
+    const data = await contract.quoteSend(
+        [sendParam.dstEid, to, 1000000000000000n, 0, "0x", "0x", "0x"],
+        false
+    );
+    return data[0];
 }
