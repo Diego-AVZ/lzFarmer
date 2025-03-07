@@ -1,9 +1,9 @@
-const MODE = "farm";
 const CREATE_ACCOUNTS = false;
 const SIMULATE_HUMAN_TXS  = false;
 
 const INITIAL_ACCOUNT = 10;
 const NUMBER_ACCOUNTS_TO_FARM = 2;
+//const FINAL_ACCOUNT ??
 
 const INITIAL_CLUSTER = 0;
 const NUMBER_CLUSTERSS_TO_FARM = 2;
@@ -35,16 +35,17 @@ const FARM_ROUTE = [
     }
 ];
 
+const IS_TEST = true;
 
 export {
-    MODE,
     CREATE_ACCOUNTS,
     SIMULATE_HUMAN_TXS,
     FARM_ROUTE,
     INITIAL_ACCOUNT,
     NUMBER_ACCOUNTS_TO_FARM,
     INITIAL_CLUSTER,
-    NUMBER_CLUSTERSS_TO_FARM
+    NUMBER_CLUSTERSS_TO_FARM,
+    IS_TEST
 }
 
 /* 

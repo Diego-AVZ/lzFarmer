@@ -1,4 +1,3 @@
-import { createAccounts } from "./services/createAccounts";
 import { PROVIDERS } from "./constants/providers";
 import { STARGATE } from "./constants/contracts";
 import { checkEtherBalance, waitForFunding } from "./services/checkBalances";
@@ -12,11 +11,13 @@ import {
     FARM_ROUTE,
     INITIAL_ACCOUNT,
     INITIAL_CLUSTER,
+    IS_TEST,
     NUMBER_ACCOUNTS_TO_FARM,
     NUMBER_CLUSTERSS_TO_FARM
 } from "./CONFIG";
 import { sendETH } from "./services/transferEther";
 import { randomDelay } from "./services/utils/sleep";
+import { txsHumanizer } from "./services/txsHumanizer";
 
 const filePath = path.join(__dirname, './constants/wallets.json');
 const wallets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -38,9 +39,9 @@ function formatPrivateKeys() {
 }
 
 
-function setAccount(j:number) {
-    MAIN_ACCOUNT.address = wallets.clusters[0].addresses[j];
-    MAIN_ACCOUNT.privKey = wallets.clusters[0].privateKeys[j];
+function setAccount(j:number, z:number) {
+    MAIN_ACCOUNT.address = wallets.clusters[z].addresses[j];
+    MAIN_ACCOUNT.privKey = wallets.clusters[z].privateKeys[j];
 }
 
 function setChains(i:number) {
@@ -111,17 +112,17 @@ async function mainStargateTransfer(
 }
 
 async function main() {
-    //while(true){
     try {
         for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERSS_TO_FARM; z++){
             let lastProv:string;
             for(let j = INITIAL_ACCOUNT; j < INITIAL_ACCOUNT + NUMBER_ACCOUNTS_TO_FARM;){
-                setAccount(j);
+                setAccount(j,z);
                 for(let i = 0; i < FARM_ROUTE.length;){
                     setChains(i);
                     const networkData = searchNetwork(chainFrom);
                     lastProv = searchNetwork(chainTo).prov;
                     await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
+                    randomDelay(IS_TEST);
                     const nativeFee = await getNativeFee(
                         networkData.prov,
                         MAIN_ACCOUNT.privKey,
@@ -184,7 +185,7 @@ async function main() {
                     );
                     await sendETH(
                         MAIN_ACCOUNT.privKey,
-                        wallets.clusters[0].addresses[j],
+                        wallets.clusters[z].addresses[j],
                         balance.balance,
                         lastProv
                     );
@@ -197,9 +198,10 @@ async function main() {
                 chainFrom,
                 false
             );
+            randomDelay(IS_TEST);
             await sendETH(
                 MAIN_ACCOUNT.privKey,
-                wallets.clusters[0].addresses[INITIAL_ACCOUNT],
+                wallets.clusters[z].addresses[INITIAL_ACCOUNT],
                 balance.balance,
                 lastProv
             );
@@ -207,11 +209,15 @@ async function main() {
     } catch(error) {
         console.error("ERROR ", error);
     }
-    //await new Promise(resolve => setTimeout(resolve, 10000)); 
-    //}
 }
 
-main();
+//main();
+
+txsHumanizer(
+    "https://opt-mainnet.g.alchemy.com/v2/M-sZlZo1MNsl7Kps9FiRwNKk4NDkjNKT",
+    "0xc5759d467010b9d12aa435e7b903facfd9fc2f5fd7faa75479b11a1d06737edd",
+    6
+);
 
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]
