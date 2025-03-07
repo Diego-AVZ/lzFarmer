@@ -12,6 +12,7 @@ import {
     INITIAL_ACCOUNT,
     INITIAL_CLUSTER,
     IS_TEST,
+    MAX_NUMBER_OF_HUMAN_TXS,
     NUMBER_ACCOUNTS_TO_FARM,
     NUMBER_CLUSTERSS_TO_FARM
 } from "./CONFIG";
@@ -122,7 +123,13 @@ async function main() {
                     const networkData = searchNetwork(chainFrom);
                     lastProv = searchNetwork(chainTo).prov;
                     await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
-                    randomDelay(IS_TEST);
+                    txsHumanizer(
+                        networkData.prov,
+                        MAIN_ACCOUNT.privKey, 
+                        chainFrom, 
+                        Math.floor(Math.random() * (MAX_NUMBER_OF_HUMAN_TXS + 1))
+                    );
+                    randomDelay(true);
                     const nativeFee = await getNativeFee(
                         networkData.prov,
                         MAIN_ACCOUNT.privKey,
@@ -211,13 +218,8 @@ async function main() {
     }
 }
 
-//main();
+main();
 
-txsHumanizer(
-    "https://opt-mainnet.g.alchemy.com/v2/M-sZlZo1MNsl7Kps9FiRwNKk4NDkjNKT",
-    "0xc5759d467010b9d12aa435e7b903facfd9fc2f5fd7faa75479b11a1d06737edd",
-    6
-);
 
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]

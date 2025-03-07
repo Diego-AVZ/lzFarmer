@@ -5,7 +5,7 @@ export async function sendETH(privateKey: string, toAddress: string, amountEther
     const wallet = new ethers.Wallet(privateKey, provider);
     const tx = {
         to: toAddress,
-        value: amountEther - 35000000000000n
+        value: amountEther - 30000000000000n
     };
     const txResponse = await wallet.sendTransaction(tx);
     await txResponse.wait(); 
