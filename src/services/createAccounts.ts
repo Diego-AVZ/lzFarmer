@@ -29,7 +29,7 @@ export function createAccounts(cluster:number, accounts: number): void {
     //logCodeWallets();
 }
 
-export function createCluser(): void {
+export function createCluster(): void {
     const rawData = fs.readFileSync(filePath, 'utf8');
     let json = rawData ? JSON.parse(rawData) : { clusters : [] };
     json.clusters.push({addresses: [], privateKeys: []})
@@ -38,7 +38,7 @@ export function createCluser(): void {
 
 export function createClusters(clusters:number) : void {
     for(let i = 0; i < clusters; i++){
-        createCluser();
+        createCluster();
         const rawData = fs.readFileSync(filePath, 'utf8');
         let json = rawData ? JSON.parse(rawData)  : { clusters : [] };
         createAccounts(json.clusters.length - 1, Math.floor(Math.random() * 6 + 3));
@@ -74,7 +74,7 @@ if (require.main === module) {
     const rawData = fs.readFileSync(filePath, 'utf8');
     let json = rawData ? JSON.parse(rawData)  : { clusters : [] };
     if(clusterId > json.clusters.length - 1){
-        createCluser();
+        createCluster();
         clusterId = json.clusters.length - 1;
     }
     createAccounts(clusterId, numAccounts);
