@@ -1,31 +1,33 @@
-import {createAccounts} from "./services/createAccounts";
+import { createAccounts } from "./services/createAccounts";
 import { PROVIDERS } from "./constants/providers";
 import { STARGATE } from "./constants/contracts";
-import { waitForFunding } from "./services/checkBalances";
+import { checkEtherBalance, waitForFunding } from "./services/checkBalances";
 import { stargateTransfer, calculateMaxValue, getNativeFee } from "./services/stargateTransfers";
 import { SendParam, MessagingFee } from "./services/stargateTransfers";
 import { ethers } from "./services/ethersService";
 import fs from 'fs';
 import path from 'path';
 import { loggerTransfer } from "./services/logger";
+import {
+    FARM_ROUTE,
+    INITIAL_ACCOUNT,
+    INITIAL_CLUSTER,
+    NUMBER_ACCOUNTS_TO_FARM,
+    NUMBER_CLUSTERSS_TO_FARM
+} from "./CONFIG";
+import { sendETH } from "./services/transferEther";
+import { randomDelay } from "./services/utils/sleep";
 
 const filePath = path.join(__dirname, './constants/wallets.json');
 const wallets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 
+let chainFrom = 0;
+let chainTo =  0;
 
-// CONFIGURATION
-/*_________________________________________*/
-const CREATE_ACCOUNTS = false;
-const SIMULATE_HUMAN_TXS  = false;
-let chainFrom = 1;
-let chainTo =  2;
-/*_________________________________________*/
-
-let account = 1;
 const MAIN_ACCOUNT = {
-    address :  wallets.addresses[account],
-    privKey : wallets.privateKeys[account]
+    address : wallets.clusters[0].addresses[0],
+    privKey : wallets.clusters[0].privateKeys[0]
 }
 
 const PRIVATE_KEYS = process.env.PRIVATE_KEY || '';
@@ -33,6 +35,17 @@ let privKeys:string[] = [];
 
 function formatPrivateKeys() {
     privKeys = PRIVATE_KEYS.split(',');
+}
+
+
+function setAccount(j:number) {
+    MAIN_ACCOUNT.address = wallets.clusters[0].addresses[j];
+    MAIN_ACCOUNT.privKey = wallets.clusters[0].privateKeys[j];
+}
+
+function setChains(i:number) {
+    chainFrom = FARM_ROUTE[i].chainFrom;
+    chainTo = FARM_ROUTE[i].chainTo;
 }
 
 function prepareSendParam(
@@ -83,9 +96,9 @@ async function mainStargateTransfer(
     fee: MessagingFee, 
     toAddress: string,
     _value: bigint
-) {
+): Promise <boolean> {
     const networkData = searchNetwork(network);
-    await stargateTransfer(
+    const success = await stargateTransfer(
         networkData.prov,
         privateKey,
         networkData.stargateAddress,
@@ -94,51 +107,108 @@ async function mainStargateTransfer(
         toAddress, 
         _value
     );
-}
-
-function changeChains() {
-    let a = chainFrom;
-    let b = chainTo;
-    chainFrom = b;
-    chainTo = a;
+    return success;
 }
 
 async function main() {
-    while(true){
+    //while(true){
     try {
-        const networkData = searchNetwork(chainFrom);
-        await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
-        const nativeFee = await getNativeFee(
-            networkData.prov,
-            MAIN_ACCOUNT.privKey,
-            networkData.stargateAddress,
-            MAIN_ACCOUNT.address,
-            prepareSendParam(1000n,chainTo),
-        );
-        const valueData = await calculateMaxValue(
-            networkData.prov,
-            MAIN_ACCOUNT.privKey,
-            networkData.stargateAddress,
-            prepareSendParam(1000000000000000n,chainTo),
-            prepareFeeParams(nativeFee),
-            MAIN_ACCOUNT.address,
-            1n
-        )
-        loggerTransfer(chainFrom,chainTo);
-        await mainStargateTransfer(
-            chainFrom,
-            MAIN_ACCOUNT.privKey,
-            prepareSendParam(valueData.amountLD,chainTo),
-            prepareFeeParams(valueData.requiredFee),
-            MAIN_ACCOUNT.address,
-            valueData.maxValue
-        );
-        changeChains();
+        for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERSS_TO_FARM; z++){
+            let lastProv:string;
+            for(let j = INITIAL_ACCOUNT; j < INITIAL_ACCOUNT + NUMBER_ACCOUNTS_TO_FARM;){
+                setAccount(j);
+                for(let i = 0; i < FARM_ROUTE.length;){
+                    setChains(i);
+                    const networkData = searchNetwork(chainFrom);
+                    lastProv = searchNetwork(chainTo).prov;
+                    await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
+                    const nativeFee = await getNativeFee(
+                        networkData.prov,
+                        MAIN_ACCOUNT.privKey,
+                        networkData.stargateAddress,
+                        MAIN_ACCOUNT.address,
+                        prepareSendParam(1000n,chainTo),
+                    );
+                    const economyFee = BigInt(Math.round(Number(nativeFee) * 0.5));
+                    const per = FARM_ROUTE[i].sendAll ? 1n : 2n;
+                    const balance = await checkEtherBalance(
+                        MAIN_ACCOUNT.address,
+                        networkData.prov,
+                        chainFrom,
+                        false
+                    );
+                    const estimateValue = BigInt((Number(balance.balance) * 40/100).toFixed(0));
+                    const valueData = await calculateMaxValue(
+                        networkData.prov,
+                        MAIN_ACCOUNT.privKey,
+                        networkData.stargateAddress,
+                        prepareSendParam(estimateValue,chainTo),
+                        prepareFeeParams(nativeFee),
+                        MAIN_ACCOUNT.address,
+                        per
+                    )
+                    loggerTransfer(chainFrom,chainTo);
+                    let success = false;
+                    let retries = 0;
+                    const maxRetries = 3;
+                    while (!success && retries < maxRetries) {
+                        success = await mainStargateTransfer(
+                            chainFrom,
+                            MAIN_ACCOUNT.privKey,
+                            prepareSendParam(valueData.amountLD, chainTo),
+                            prepareFeeParams(economyFee),
+                            MAIN_ACCOUNT.address,
+                            valueData.maxValue
+                        );
+                        if (!success) {
+                            console.warn(`⚠️ Transfer failed. Retrying (${retries + 1}/${maxRetries}) chainFrom= ${chainFrom} → chainTo= ${chainTo}...`);
+                            await new Promise(r => setTimeout(r, 5000));
+                            retries++;
+                        }
+                    }
+                    if (success) {
+                        i++;
+                    } else {
+                        console.error(`❌ Max retries reached for chainFrom= ${chainFrom} → chainTo= ${chainTo}. Skipping...`);
+                        i++;
+                    }
+                }
+                j++
+                if(j < INITIAL_ACCOUNT + NUMBER_ACCOUNTS_TO_FARM){
+                    await waitForFunding(MAIN_ACCOUNT.address, lastProv, chainFrom);
+                    const balance = await checkEtherBalance(
+                        MAIN_ACCOUNT.address,
+                        lastProv,
+                        chainFrom,
+                        false
+                    );
+                    await sendETH(
+                        MAIN_ACCOUNT.privKey,
+                        wallets.clusters[0].addresses[j],
+                        balance.balance,
+                        lastProv
+                    );
+                }
+            }
+            await waitForFunding(MAIN_ACCOUNT.address, lastProv, chainFrom);
+            const balance = await checkEtherBalance(
+                MAIN_ACCOUNT.address,
+                lastProv,
+                chainFrom,
+                false
+            );
+            await sendETH(
+                MAIN_ACCOUNT.privKey,
+                wallets.clusters[0].addresses[INITIAL_ACCOUNT],
+                balance.balance,
+                lastProv
+            );
+        }
     } catch(error) {
         console.error("ERROR ", error);
     }
-    await new Promise(resolve => setTimeout(resolve, 10000)); 
-}
+    //await new Promise(resolve => setTimeout(resolve, 10000)); 
+    //}
 }
 
 main();
@@ -146,5 +216,5 @@ main();
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]
 npm run start
-136774035857932n
+
 */

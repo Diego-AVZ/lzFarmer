@@ -2,19 +2,21 @@ import { ethers } from "./ethersService";
 import { loggerCheckBalance } from "./logger";
 
 
-export async function checkEtherBalance (address:string, prov:string, chain:number) :Promise<{ isAboveThreshold: boolean; balance: bigint }> {
+export async function checkEtherBalance (address:string, prov:string, chain:number, showLog:boolean) :Promise<{ isAboveThreshold: boolean; balance: bigint }> {
     try {
         const provider = new ethers.JsonRpcProvider(prov);
         const balanceWei = await provider.getBalance(address);
         const balanceEther = ethers.formatEther(balanceWei); 
-        loggerCheckBalance(
-            chain,
-            address,
-            balanceEther,
-            balanceWei > 15000000000000000n
-        );       
+        if(showLog){
+            loggerCheckBalance(
+                chain,
+                address,
+                balanceEther,
+                balanceWei > 1000000000000000
+            );   
+        }    
         return {
-            isAboveThreshold: balanceWei > 15000000000000000n,
+            isAboveThreshold: balanceWei > 1000000000000000,
             balance: balanceWei
         };
     } catch (error) {
@@ -23,7 +25,7 @@ export async function checkEtherBalance (address:string, prov:string, chain:numb
 }
 
 export async function waitForFunding(account:string, prov:string, chain:number) {
-    while (!((await checkEtherBalance(account, prov, chain)).isAboveThreshold)) {
-        await new Promise(resolve => setTimeout(resolve, 40500));
+    while (!((await checkEtherBalance(account, prov, chain, true)).isAboveThreshold)) {
+        await new Promise(resolve => setTimeout(resolve, 60000));
     }
 }

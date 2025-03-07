@@ -1,7 +1,5 @@
 import { ethers } from "./ethersService";
-import { STARGATE } from "../constants/contracts";
 import { STARGATE_ABI } from "../constants/contracts";
-import { checkEtherBalance } from "./checkBalances";
 
 export interface SendParam {
     dstEid:number,
@@ -26,12 +24,12 @@ export async function stargateTransfer(
     fee: MessagingFee, 
     toAddress: string,
     _value: bigint
-) {
+): Promise <boolean> {
     try {
         const provider = new ethers.JsonRpcProvider(prov);
         const wallet = new ethers.Wallet(privateKey, provider);
         const contract = new ethers.Contract(stargateAddress, STARGATE_ABI, wallet);
-        
+        const economyFee = fee.nativeFee + 1n / 2n;
         let gasEstimate;
         try {
             gasEstimate = await contract.send.estimateGas(
@@ -46,12 +44,11 @@ export async function stargateTransfer(
         }
         const gasLimit = Math.ceil(Number(gasEstimate) * 1.2);
         const feeData = await provider.getFeeData();
-        const gasPrice = feeData.gasPrice * 2n; 
-
+        const gasPrice = feeData.gasPrice; 
         console.log("🚀 Transaction processing...");
         const tx = await contract.send(
             sendParam, 
-            fee, 
+            [economyFee,0], 
             toAddress, 
             { 
                 value: _value,
@@ -61,8 +58,11 @@ export async function stargateTransfer(
         );
         await tx.wait();
         console.log("✅ Transaction confirmed:", tx.hash);
+        return true;
     } catch(error) {
-        console.error("Stargate Transfer Error:");
+        console.error("Stargate Transfer Error");
+        return false;
+
     }
 }
 
@@ -94,7 +94,7 @@ export async function calculateMaxValue(
         }
         const gasLimit = BigInt(Math.ceil(Number(gasEstimate) * 1.2));
         const feeData = await provider.getFeeData();
-        const gasPrice = feeData.gasPrice * 2n; 
+        const gasPrice = feeData.gasPrice; 
         const gasCostInWei = gasPrice * gasLimit;
         
         const to = ethers.zeroPadValue(toAddress, 32);
@@ -103,23 +103,23 @@ export async function calculateMaxValue(
             [sendParam.dstEid, to, estimatedAmountLD, sendParam.minAmountLD, "0x", "0x", "0x"],
             false
         );
-        const buffer = 1n * 10n**16n;
+        const buffer = 1n * 10n**13n;
         const amountToSend = balance - nativeFee[0] - gasCostInWei - buffer;
         const maxValue = amountToSend + nativeFee[0];
+        
         /*
         console.log("GAS COST ", gasCostInWei);
         console.log("BALANCE ", balance);
-        console.log("NATIVE COST ", nativeFee[0]);
         console.log("VALUE TO SEND ", maxValue);
         console.log("AMOUNT TO SEND ", amountToSend);
         */
         return {
             maxValue: maxValue,
             amountLD: amountToSend,
-            requiredFee : nativeFee[0]
+            requiredFee: nativeFee[0]
         };
     } catch(error) {
-        console.error("Calculate Max Value Error:", error);
+        console.error("Calculate Max Value Error");
         throw error;
     }
 }
@@ -139,5 +139,6 @@ export async function getNativeFee(
         [sendParam.dstEid, to, 1000000000000000n, 0, "0x", "0x", "0x"],
         false
     );
+    //console.log(data[0]);
     return data[0];
 }

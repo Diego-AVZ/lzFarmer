@@ -5,7 +5,7 @@ const STARGATE2 = {
 
 const STARGATE = [
     {
-        chain : "sepolia",
+        chain : "Sepolia",
         address : "0x9Cc7e185162Aa5D1425ee924D97a87A0a34A0706", 
         eId : 40161
     },
@@ -20,8 +20,24 @@ const STARGATE = [
         eId : 40232
     },
     {
-        chain : "linea",
-        address : "0x81F6138153d473E8c5EcebD3DC8Cd4903506B075"
+        chain : "Linea",
+        address : "0x81F6138153d473E8c5EcebD3DC8Cd4903506B075",
+        eId : 30183
+    },
+    {
+        chain : "Arbitrum",
+        address : "0xA45B5130f36CDcA45667738e2a258AB09f4A5f7F",
+        eId : 30110
+    },
+    {
+        chain : "Base",
+        address : "0xdc181Bd607330aeeBEF6ea62e03e5e1Fb4B6F7C7",
+        eId : 30184
+    },
+    {
+        chain : "Optimism",
+        address : "0xe8CDF27AcD73a434D661C84887215F7598e7d0d3",
+        eId : 30111
     }
 ];
 
