@@ -4,10 +4,10 @@ export function sleep(ms: number): Promise<void> {
 export function randomDelay(isTest:boolean): Promise<void> {
     let ms = 0;
     if(!isTest){
-        ms = Math.floor(Math.random() * 180 + 5) * 1000;
+        ms = Math.floor(Math.random() * 180 + 15) * 1000;
     } else {
-        ms = Math.floor(Math.random() * 5 + 5) * 1000;
+        ms = Math.floor(Math.random() * 15 + 10) * 1000;
     }
-    console.log("🕒 HUMANIZING TXS --- Waiting ", ms / 1000, "seconds...");
+    console.log("🕒 SLEEPING --- Waiting ", ms / 1000, "seconds...");
     return new Promise(resolve => setTimeout(resolve, ms));
 }

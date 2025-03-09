@@ -53,7 +53,7 @@ export async function depositAndWithdrawWETH(prov:string, privateKey:string, cha
             }
         );
         await tx.wait();
-        randomDelay(true);
+        await randomDelay(true);
         const tx2 = await wEth.withdraw(
             amount,
             {
@@ -78,8 +78,8 @@ export async function depositAndWithdrawFromAave(prov:string, privateKey:string,
             const aave = new ethers.Contract(aaveAddress, AAVE_ABI, wallet);
             const amount = await depositWETH(prov, privateKey, chain);
             const wEth = ONCHAIN_ADDRESSES[chain].tokens[0].address;
-            randomDelay(true);
-            await tokenApproval(prov, privateKey, chain, wEth, amount, aaveAddress);
+            await randomDelay(true);
+            await tokenApproval(prov, privateKey, wEth, amount, aaveAddress);
             const txs = await aave.supply(
                 wEth,
                 amount,
@@ -87,16 +87,18 @@ export async function depositAndWithdrawFromAave(prov:string, privateKey:string,
                 0
             );
             await txs.wait();
-            randomDelay(IS_TEST);
-            //const aToken = await aave.getReserveData(wEth);
-            //await tokenApproval(prov, privateKey, chain, aToken, amount, aaveAddress);
+            await randomDelay(IS_TEST);
+            const aTokenReserve = await aave.getReserveData(wEth);
+            const aTokenAddress = aTokenReserve[8];
+            const aToken = new ethers.Contract(aTokenAddress, ERC20_ABI, wallet); 
+            const aTokenBalance = await aToken.balanceOf(wallet.address);
             const txs2 = await aave.withdraw(
                 wEth,
-                amount,
+                aTokenBalance,
                 wallet.address
             );
             await txs2.wait();
-            randomDelay(true);
+            await randomDelay(true);
             await withdrawWETH(
                 prov,
                 privateKey,
@@ -109,17 +111,17 @@ export async function depositAndWithdrawFromAave(prov:string, privateKey:string,
     }
 }
 
-async function tokenApproval(prov:string, privateKey:string, chain:number, token:string, amount:bigint, spender:string) {
+async function tokenApproval(prov:string, privateKey:string, token:string, amount:bigint, spender:string) {
     try {
         const provider = new ethers.JsonRpcProvider(prov);
         const wallet = new ethers.Wallet(privateKey, provider);
-        const token = ONCHAIN_ADDRESSES[chain].tokens[0].address;
         const erc20 = new ethers.Contract(token, ERC20_ABI, wallet);
         const tx = await erc20.approve(
                 spender,
                 amount
             );
         await tx.wait();
+        console.log("Token Approved");
     } catch (error) {
         console.error("Error Approving Token ", error);
     }
@@ -150,13 +152,14 @@ async function depositWETH(prov:string, privateKey:string, chain:number): Promis
             }
         );
         await tx.wait();
+        console.log("ETH converted to WETH");
         return amount;
     } catch (error) {
         console.error("Error wEth Actiom ", error);
     }
 }
 
-async function withdrawWETH(prov:string, privateKey:string, chain:number, amount:bigint){
+export async function withdrawWETH(prov:string, privateKey:string, chain:number, amount:bigint){
     try {
         const provider = new ethers.JsonRpcProvider(prov);
         const wallet = new ethers.Wallet(privateKey, provider);
@@ -174,6 +177,7 @@ async function withdrawWETH(prov:string, privateKey:string, chain:number, amount
             }
         );
         await tx2.wait();
+        console.log("WETH converted to ETH");
     } catch (error) {
         console.error("Error wEth Actiom ", error);
     }
@@ -186,8 +190,7 @@ function searchProtocol(protocol:string, chain:number): number | undefined {
             data[i].protocol === protocol
         ){
             return i;
-        } else {
-            return undefined;
-        }
+        } 
     }
+    return undefined;
 }

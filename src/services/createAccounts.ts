@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import fs from 'fs';
 import path from 'path';
 
-const filePath = path.join(__dirname, '../constants/test.json');
+const filePath = path.join(__dirname, '../constants/wallets.json');
 
 const pks: string[] = [];
 const addresses: string[] = [];
@@ -31,7 +31,7 @@ export function createAccounts(cluster:number, accounts: number): void {
 
 export function createCluster(): void {
     const rawData = fs.readFileSync(filePath, 'utf8');
-    let json = rawData ? JSON.parse(rawData) : { clusters : [] };
+    let json = rawData ? JSON.parse(rawData) : { clusters : [{addresses : [], privateKeys : []}] };
     json.clusters.push({addresses: [], privateKeys: []})
     fs.writeFileSync(filePath, JSON.stringify(json, null, 2), 'utf8');
 }

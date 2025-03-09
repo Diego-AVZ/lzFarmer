@@ -9,20 +9,18 @@ import path from 'path';
 import { loggerTransfer } from "./services/logger";
 import {
     FARM_ROUTE,
-    INITIAL_ACCOUNT,
     INITIAL_CLUSTER,
     IS_TEST,
     MAX_NUMBER_OF_HUMAN_TXS,
-    NUMBER_ACCOUNTS_TO_FARM,
-    NUMBER_CLUSTERSS_TO_FARM
+    NUMBER_CLUSTERS_TO_FARM
 } from "./CONFIG";
 import { sendETH } from "./services/transferEther";
 import { randomDelay } from "./services/utils/sleep";
 import { txsHumanizer } from "./services/txsHumanizer";
 
+
 const filePath = path.join(__dirname, './constants/wallets.json');
 const wallets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
 
 let chainFrom = 0;
 let chainTo =  0;
@@ -32,17 +30,12 @@ const MAIN_ACCOUNT = {
     privKey : wallets.clusters[0].privateKeys[0]
 }
 
-const PRIVATE_KEYS = process.env.PRIVATE_KEY || '';
-let privKeys:string[] = [];
-
-function formatPrivateKeys() {
-    privKeys = PRIVATE_KEYS.split(',');
-}
-
-
+let numberAccountsToFarm = 0;
+ 
 function setAccount(j:number, z:number) {
     MAIN_ACCOUNT.address = wallets.clusters[z].addresses[j];
     MAIN_ACCOUNT.privKey = wallets.clusters[z].privateKeys[j];
+    numberAccountsToFarm = wallets.clusters[z].addresses.length;
 }
 
 function setChains(i:number) {
@@ -60,7 +53,6 @@ function prepareSendParam(
     const extraOptions = "0x"; 
     const composeMsg = "0x"; 
     const oftCmd = "0x"; 
-
     return {
         dstEid,
         to,
@@ -114,22 +106,23 @@ async function mainStargateTransfer(
 
 async function main() {
     try {
-        for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERSS_TO_FARM; z++){
+        for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERS_TO_FARM;){
             let lastProv:string;
-            for(let j = INITIAL_ACCOUNT; j < INITIAL_ACCOUNT + NUMBER_ACCOUNTS_TO_FARM;){
+            setAccount(0,z);
+            for(let j = 0; j < numberAccountsToFarm;){
                 setAccount(j,z);
                 for(let i = 0; i < FARM_ROUTE.length;){
                     setChains(i);
                     const networkData = searchNetwork(chainFrom);
                     lastProv = searchNetwork(chainTo).prov;
                     await waitForFunding(MAIN_ACCOUNT.address, networkData.prov, chainFrom);
-                    txsHumanizer(
+                    await txsHumanizer(
                         networkData.prov,
                         MAIN_ACCOUNT.privKey, 
                         chainFrom, 
                         Math.floor(Math.random() * (MAX_NUMBER_OF_HUMAN_TXS + 1))
                     );
-                    randomDelay(true);
+                    await randomDelay(true);
                     const nativeFee = await getNativeFee(
                         networkData.prov,
                         MAIN_ACCOUNT.privKey,
@@ -179,10 +172,10 @@ async function main() {
                     } else {
                         console.error(`❌ Max retries reached for chainFrom= ${chainFrom} → chainTo= ${chainTo}. Skipping...`);
                         i++;
-                    }
+                    };
                 }
                 j++
-                if(j < INITIAL_ACCOUNT + NUMBER_ACCOUNTS_TO_FARM){
+                if(j < numberAccountsToFarm){
                     await waitForFunding(MAIN_ACCOUNT.address, lastProv, chainFrom);
                     const balance = await checkEtherBalance(
                         MAIN_ACCOUNT.address,
@@ -205,13 +198,14 @@ async function main() {
                 chainFrom,
                 false
             );
-            randomDelay(IS_TEST);
+            await randomDelay(IS_TEST);
             await sendETH(
                 MAIN_ACCOUNT.privKey,
-                wallets.clusters[z].addresses[INITIAL_ACCOUNT],
+                wallets.clusters[z].addresses[0],
                 balance.balance,
                 lastProv
             );
+            z++
         }
     } catch(error) {
         console.error("ERROR ", error);
@@ -220,9 +214,17 @@ async function main() {
 
 main();
 
-
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]
-npm run start
+
+
+commands
+
+`npm run createAccounts -- X Y` -> X == Number of accounts to create, Y == ID of the cluster where you want to create the accounts (0 for first cluster, 1 for second ... ).
+---
+`npm run createClusters -- Z` -> Z == Number of clusters to create (Each cluster will contain a random number of accounts, from 3 to 8).
+---
+`npm run start` -> Executes the route.
+---
 
 */

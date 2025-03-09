@@ -1,20 +1,5 @@
 const STARGATE = [
     {
-        chain : "Sepolia",
-        address : "0x9Cc7e185162Aa5D1425ee924D97a87A0a34A0706", 
-        eId : 40161
-    },
-    {
-        chain : "Arbitrum Sepolia",
-        address : "0x6fddB6270F6c71f31B62AE0260cfa8E2e2d186E0",
-        eId : 40231
-    },
-    {
-        chain : "Optimism Sepolia",
-        address : "0xa31dCc5C71E25146b598bADA33E303627D7fC97e",
-        eId : 40232
-    },
-    {
         chain : "Linea",
         address : "0x81F6138153d473E8c5EcebD3DC8Cd4903506B075",
         eId : 30183
@@ -36,108 +21,110 @@ const STARGATE = [
     }
 ];
 
+/*{
+  chain : "",
+  protocol : "",
+  address : "", 
+}*/
 const ONCHAIN_ADDRESSES = [
-    // OPTIMISM
+    // LINEA
     {
         protocols : [
             {
-                chain : "",
-                protocol : "",
-                address : "", 
+                chain : "linea",
+                protocol : "aave",
+                address : "0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac", 
+            },
+            {
+              chain : "linea",
+              protocol : "kyberswap",
+              address : "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5", 
             }
-            
         ],
         tokens : [
             {
                 token : "WETH",
-                address : ""
+                address : "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f"
+            },
+            {
+              token : "LYNX",
+              address : "0x1a51b19CE03dbE0Cb44C1528E34a7EDD7771E9Af"
             }
         ]
     },
-    // OPTIMISM
+    // ARBITRUM
     {
-        protocols : [
-            {
-                chain : "",
-                protocol : "",
-                address : "", 
-            }
-            
-        ],
-        tokens : [
-            {
-                token : "WETH",
-                address : ""
-            }
-        ]
+      protocols : [
+        {
+            chain : "arbitrum",
+            protocol : "aave",
+            address : "0x794a61358D6845594F94dc1DB02A252b5b4814aD", 
+        },
+        {
+          chain : "arbitrum",
+          protocol : "balancer",
+          address : "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f", 
+        },
+        {
+          chain : "arbitrum",
+          protocol : "uniswap position manager",
+          address : "0xC36442b4a4522E871399CD717aBDD847Ab11FE88", 
+        }    
+      ],
+      tokens : [
+        {
+            token : "WETH",
+            address : "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+        },
+        {
+          token : "USDT",
+          address : "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+        },
+        {
+          token : "USDC",
+          address : "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+        },
+        {
+          token : "WBTC",
+          address : "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+        }
+    ]
     },
-    // OPTIMISM
+    // BASE
     {
-        protocols : [
-            {
-                chain : "",
-                protocol : "",
-                address : "", 
-            }
-            
-        ],
-        tokens : [
-            {
-                token : "WETH",
-                address : ""
-            }
-        ]
-    },
-    // OPTIMISM
-    {
-        protocols : [
-            {
-                chain : "",
-                protocol : "",
-                address : "", 
-            }
-            
-        ],
-        tokens : [
-            {
-                token : "WETH",
-                address : ""
-            }
-        ]
-    },
-    // OPTIMISM
-    {
-        protocols : [
-            {
-                chain : "",
-                protocol : "",
-                address : "", 
-            }
-            
-        ],
-        tokens : [
-            {
-                token : "WETH",
-                address : ""
-            }
-        ]
-    },
-    // OPTIMISM
-    {
-        protocols : [
-            {
-                chain : "",
-                protocol : "",
-                address : "", 
-            }
-            
-        ],
-        tokens : [
-            {
-                token : "WETH",
-                address : ""
-            }
-        ]
+      protocols : [
+        {
+            chain : "base",
+            protocol : "aave",
+            address : "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5", 
+        },
+        {
+          chain : "base",
+          protocol : "lifi",
+          address : "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE", 
+        },
+        {
+          chain : "base",
+          protocol : "random",
+          address : "0x5C9bdC801a600c006c388FC032dCb27355154cC9", 
+        },
+        {
+          chain : "base",
+          protocol : "uniswap position manager",
+          address : "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1", 
+      }
+          
+      ],
+      tokens : [
+          {
+              token : "WETH",
+              address : "0x4200000000000000000000000000000000000006"
+          },
+          {
+            token : "USDC",
+            address : "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+        }
+      ]
     },
     // OPTIMISM
     {
@@ -180,7 +167,7 @@ const ONCHAIN_ADDRESSES = [
     }
 ];
 
-  
+
 export {
     STARGATE_ABI,
     STARGATE,

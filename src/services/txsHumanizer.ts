@@ -1,49 +1,54 @@
 import { ethers, Wallet } from "ethers";
 import { IS_TEST } from "../CONFIG";
 import { depositAndWithdrawFromAave, depositAndWithdrawWETH, tokenApprovalRandom } from "./onchainActions";
-import { sendETH } from "./transferEther";
+import { sendETH, sendETH2 } from "./transferEther";
 import { randomDelay } from "./utils/sleep";
 
-const ONCHAIN_ACTIONS = 4;
+const ONCHAIN_ACTIONS = 5;
 
-export function txsHumanizer(
+export async function txsHumanizer(
     prov:string, 
     privateKey:string,
     chain:number,
     rounds:number
 ) {
     for(let i = 0; i < rounds; i++){
-        randomDelay(IS_TEST);
-        const actionId = Math.floor(Math.random() * ONCHAIN_ACTIONS);
+        await randomDelay(IS_TEST);
+        let actionId = Math.floor(Math.random() * ONCHAIN_ACTIONS);
         if(actionId == 0){
-            tokenApprovalRandom(
+            console.log("👨‍👩‍👧‍👦  HUMANIZING TXS --- executing ⚡ TOKEN APPROVAL");
+            await tokenApprovalRandom(
                 prov,
                 privateKey,
                 chain
             );
         } else if(actionId == 1){
-            depositAndWithdrawWETH(
+            console.log("👨‍👩‍👧‍👦  HUMANIZING TXS --- executing ⚡ wETH actions");
+            await depositAndWithdrawWETH(
                 prov,
                 privateKey,
                 chain
             );
         } else if(actionId == 2){
-            sendETH( // self txs
+            console.log("👨‍👩‍👧‍👦  HUMANIZING TXS --- executing ⚡ SELF ETH TXS");
+            await sendETH( // self txs
                 privateKey,
                 new ethers.Wallet(privateKey, new ethers.JsonRpcProvider(prov)).address,
                 30000000000100n,
                 prov
             );
         } else if(actionId == 3){
+            console.log("👨‍👩‍👧‍👦  HUMANIZING TXS --- executing ⚡ transfer to RANDOM ADDRESS");
             const randomAccount = Wallet.createRandom();
-            sendETH( // txs to a random address
+            await sendETH2( // txs to a random address
                 privateKey,
                 randomAccount.address,
-                BigInt(Math.floor(Math.random() * 1000000)),
+                BigInt(Math.floor(Math.random() * 100000000000)),
                 prov
             );
         } else if(actionId == 4) {
-            depositAndWithdrawFromAave(
+            console.log("👨‍👩‍👧‍👦  HUMANIZING TXS --- executing ⚡ AAVE ACTIONS");
+            await depositAndWithdrawFromAave(
                 prov,
                 privateKey,
                 chain
@@ -51,5 +56,5 @@ export function txsHumanizer(
 
         }
     }
-    randomDelay(IS_TEST);
+    await randomDelay(IS_TEST);
 }

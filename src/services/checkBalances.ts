@@ -12,11 +12,11 @@ export async function checkEtherBalance (address:string, prov:string, chain:numb
                 chain,
                 address,
                 balanceEther,
-                balanceWei > 1000000000000000
+                balanceWei > 1000000000000000n
             );   
         }    
         return {
-            isAboveThreshold: balanceWei > 1000000000000000,
+            isAboveThreshold: balanceWei > 1000000000000000n,
             balance: balanceWei
         };
     } catch (error) {

@@ -1,5 +1,4 @@
 {
-  "ETH cost": 0,
   "clusters": [
     {
       "addresses": [
@@ -17,6 +16,32 @@
         "0x8ac15839ce3c6f01dc623a9809e711f73ce3794147f9482350970a7da371836f",
         "0xf849169175076303f955847b02fda3f5f090c93c5c499c08b3d41cecbe7032d1",
         "0x377457c3dbf41ea4ebb4bd619b900cba8a7a3176182fe34277a05895ffdf1f66"
+      ]
+    },
+    {
+      "addresses": [
+        "0xF221A5EC7195E94C8ce4C8B2277a961d6ED01183",
+        "0x59B90A8D79921f3af91474AAcA923f502e20F1D7",
+        "0xc2aeB52D36f854CCD7Ce73056a4C27f9682328A6",
+        "0x94c5E91d1D4ce4092A6E0effB577236e6ae5b8D9"
+      ],
+      "privateKeys": [
+        "0xfae76230cf08a63d24e3416b97cdcea965d85277afbacdca1f9a2050f69062d4",
+        "0xb2e267d0c255df566390cce8e79d51864fc6b9b30c540c1d26c4113ca250c207",
+        "0x04e482d951faef783f91a9bfef785db6988179d7a39d0ae832567fa0a6f49285",
+        "0xd26b1576b0a098f91de546ffb7ae769fe5cb1f7dcc1274cf32d3b61d38c76cf0"
+      ]
+    },
+    {
+      "addresses": [
+        "0xa02954d763bE92eA8C592614B9acdC2bd64575D9",
+        "0xc715973C0090617cF522F98dd9A66ee4D501236D",
+        "0x03591d229aB76F3103c52a58976e85a95c6f6015"
+      ],
+      "privateKeys": [
+        "0xb9b3f6ee5d9d8fa347a3cd6c56233ff523041674d965bbe4cadff0c024c02ce4",
+        "0x73a4fb8d4cdcb1b57e4afd6fa99a7394e8a3bb9da9bf86966df6f2541f82e8ed",
+        "0x54c600fe9c7caff0cc0f71c0efedf83b571be430bf7c7d403a892ae3935b6c86"
       ]
     }
   ]
