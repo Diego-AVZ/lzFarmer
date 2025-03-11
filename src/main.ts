@@ -1,9 +1,8 @@
-import { PROVIDERS } from "./constants/providers";
-import { STARGATE } from "./constants/contracts";
+console.log(`🟢 Starting process PID: ${process.pid}`);
+console.trace("🔍 Process started from here");
+
 import { checkEtherBalance, waitForFunding } from "./services/checkBalances";
-import { stargateTransfer, calculateMaxValue, getNativeFee } from "./services/stargateTransfers";
-import { SendParam, MessagingFee } from "./services/stargateTransfers";
-import { ethers } from "./services/ethersService";
+import { calculateMaxValue, getNativeFee, searchNetwork, prepareSendParam, prepareFeeParams, mainStargateTransfer } from "./services/stargateTransfers";
 import fs from 'fs';
 import path from 'path';
 import { loggerTransfer } from "./services/logger";
@@ -43,70 +42,11 @@ function setChains(i:number) {
     chainTo = FARM_ROUTE[i].chainTo;
 }
 
-function prepareSendParam(
-    amountLD: bigint,
-    destChain: number
-): SendParam {
-    const dstEid = searchNetwork(destChain).destId;
-    const to = ethers.zeroPadValue(MAIN_ACCOUNT.address, 32);
-    const minAmountLD = amountLD - (amountLD * BigInt(10) / BigInt(100)); 
-    const extraOptions = "0x"; 
-    const composeMsg = "0x"; 
-    const oftCmd = "0x"; 
-    return {
-        dstEid,
-        to,
-        amountLD,
-        minAmountLD,
-        extraOptions,
-        composeMsg,
-        oftCmd
-    };
-}
-
-function prepareFeeParams(nativeFee:bigint): MessagingFee { 
-        const lzTokenFee = 0;
-        return {
-            nativeFee,
-            lzTokenFee
-        }
-}
-
-function searchNetwork(network:number): {stargateAddress:string; prov:string, destId:number}{
-    const stargateAddress = STARGATE[network].address;
-    const prov = PROVIDERS[network];
-    const destId = STARGATE[network].eId;
-    return {
-        stargateAddress,
-        prov,
-        destId
-    }
-}
-
-async function mainStargateTransfer(
-    network:number,
-    privateKey: string,
-    sendParam: SendParam, 
-    fee: MessagingFee, 
-    toAddress: string,
-    _value: bigint
-): Promise <boolean> {
-    const networkData = searchNetwork(network);
-    const success = await stargateTransfer(
-        networkData.prov,
-        privateKey,
-        networkData.stargateAddress,
-        sendParam, 
-        fee,
-        toAddress, 
-        _value
-    );
-    return success;
-}
-
 async function main() {
+    console.log(`🟢 Starting process PID: ${process.pid}`);
+
     try {
-        for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERS_TO_FARM;){
+        for(let z = INITIAL_CLUSTER; z < INITIAL_CLUSTER + NUMBER_CLUSTERS_TO_FARM; z++){
             let lastProv:string;
             setAccount(0,z);
             for(let j = 0; j < numberAccountsToFarm;){
@@ -128,7 +68,7 @@ async function main() {
                         MAIN_ACCOUNT.privKey,
                         networkData.stargateAddress,
                         MAIN_ACCOUNT.address,
-                        prepareSendParam(1000n,chainTo),
+                        prepareSendParam(1000n,chainTo,MAIN_ACCOUNT.address),
                     );
                     const economyFee = BigInt(Math.round(Number(nativeFee) * 0.5));
                     const per = FARM_ROUTE[i].sendAll ? 1n : 2n;
@@ -143,7 +83,7 @@ async function main() {
                         networkData.prov,
                         MAIN_ACCOUNT.privKey,
                         networkData.stargateAddress,
-                        prepareSendParam(estimateValue,chainTo),
+                        prepareSendParam(estimateValue,chainTo,MAIN_ACCOUNT.address),
                         prepareFeeParams(nativeFee),
                         MAIN_ACCOUNT.address,
                         per
@@ -153,10 +93,11 @@ async function main() {
                     let retries = 0;
                     const maxRetries = 3;
                     while (!success && retries < maxRetries) {
+                        
                         success = await mainStargateTransfer(
                             chainFrom,
                             MAIN_ACCOUNT.privKey,
-                            prepareSendParam(valueData.amountLD, chainTo),
+                            prepareSendParam(valueData.amountLD, chainTo, MAIN_ACCOUNT.address),
                             prepareFeeParams(economyFee),
                             MAIN_ACCOUNT.address,
                             valueData.maxValue
@@ -205,7 +146,6 @@ async function main() {
                 balance.balance,
                 lastProv
             );
-            z++
         }
     } catch(error) {
         console.error("ERROR ", error);
@@ -213,6 +153,8 @@ async function main() {
 }
 
 main();
+
+
 
 /* 
 [40161,"0x000000000000000000000000d714BA2530D1438ac4d1639184c4cF6d92573F91",30000000000000000,0,"0x","0x","0x"]
@@ -227,4 +169,27 @@ commands
 `npm run start` -> Executes the route.
 ---
 
+Get-Process node 
+Get-Process node | Stop-Process -Force
+
 */
+
+process.on("SIGINT", async () => {
+    console.log("🚨 Terminating process in a controlled manner...");
+    process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+    console.log("🚨 Terminating process due to SIGTERM (terminal closure)...");
+    process.exit(0);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("❌ Uncaught exception: ", error);
+    process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("❌ Unhandled rejection: ", reason);
+    process.exit(1);
+});

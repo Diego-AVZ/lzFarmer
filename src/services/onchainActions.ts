@@ -13,15 +13,18 @@ export async function tokenApprovalRandom(prov:string, privateKey:string, chain:
             Math.floor(Math.random() * ONCHAIN_ADDRESSES[chain].tokens.length)
         ].address
         const erc20 = new ethers.Contract(token, ERC20_ABI, wallet);
+        const gasPrice = (await provider.getFeeData()).gasPrice;
         const tx = await erc20.approve(
             ONCHAIN_ADDRESSES[chain].protocols[
                 Math.floor(
                     Math.random() * (
                         ONCHAIN_ADDRESSES[chain].protocols.length - 1
                     ))].address,
-                Math.floor(Math.random() * 100)
+                Math.floor(Math.random() * 100),
+                {gasPrice : gasPrice * 115n/100n}
             );
         await tx.wait();
+        
     } catch (error) {
         console.error("Error Approving Token ", error);
     }
@@ -44,12 +47,14 @@ export async function depositAndWithdrawWETH(prov:string, privateKey:string, cha
             chain,
             false
         );
+        const gasPrice = (await provider.getFeeData()).gasPrice;
         const amount = (checkBalance.balance / 10n) * BigInt(Math.floor(Math.random() * 5 + 1));
         const currentNonce = await provider.getTransactionCount(wallet.address);
         const tx = await wEth.deposit(
             {
                 value : amount,
-                nonce : currentNonce
+                nonce : currentNonce,
+                gasPrice : gasPrice * 115n/100n
             }
         );
         await tx.wait();
@@ -57,7 +62,8 @@ export async function depositAndWithdrawWETH(prov:string, privateKey:string, cha
         const tx2 = await wEth.withdraw(
             amount,
             {
-                nonce : currentNonce + 1
+                nonce : currentNonce + 1,
+                gasPrice : gasPrice * 115n/100n
             }
         );
         await tx2.wait();
@@ -94,7 +100,7 @@ export async function depositAndWithdrawFromAave(prov:string, privateKey:string,
             const aTokenBalance = await aToken.balanceOf(wallet.address);
             const txs2 = await aave.withdraw(
                 wEth,
-                aTokenBalance,
+                aTokenBalance - 1000n,
                 wallet.address
             );
             await txs2.wait();
@@ -108,6 +114,28 @@ export async function depositAndWithdrawFromAave(prov:string, privateKey:string,
         }
     } catch (error) {
         console.error("Aave ERROR: ", error);
+    }
+}
+
+export async function checkAaveBalances(address:string, chain:number, prov:string): Promise <bigint> {
+    try {
+        const provider = new ethers.JsonRpcProvider(prov);
+        let aaveAddress:string;
+        const index = searchProtocol("aave", chain);
+        if (index !== undefined) {
+            aaveAddress = ONCHAIN_ADDRESSES[chain].protocols[index].address;
+            const aave = new ethers.Contract(aaveAddress, AAVE_ABI, provider);
+            const wEth = ONCHAIN_ADDRESSES[chain].tokens[0].address;
+            const aTokenReserve = await aave.getReserveData(wEth);
+            const aTokenAddress = aTokenReserve[8];
+            const aToken = new ethers.Contract(aTokenAddress, ERC20_ABI, provider); 
+            const aTokenBalance = await aToken.balanceOf(address);
+            return aTokenBalance;
+        } else {
+            return undefined;
+        }
+    } catch (error) {
+        
     }
 }
 
@@ -193,4 +221,43 @@ function searchProtocol(protocol:string, chain:number): number | undefined {
         } 
     }
     return undefined;
+}
+
+export async function withdrawFromAave(prov:string, privateKey:string, chain:number) {
+    try {
+        const provider = new ethers.JsonRpcProvider(prov);
+        const wallet = new ethers.Wallet(privateKey, provider);
+        let aaveAddress:string;
+        const index = searchProtocol("aave", chain);
+        if (index !== undefined) {
+            aaveAddress = ONCHAIN_ADDRESSES[chain].protocols[index].address;
+            const aave = new ethers.Contract(aaveAddress, AAVE_ABI, wallet);
+            const wEth = ONCHAIN_ADDRESSES[chain].tokens[0].address;
+            await randomDelay(true);
+            const aTokenReserve = await aave.getReserveData(wEth);
+            const aTokenAddress = aTokenReserve[8];
+            const aToken = new ethers.Contract(aTokenAddress, ERC20_ABI, wallet); 
+            const aTokenBalance = await aToken.balanceOf(wallet.address);
+            const txs = await aave.withdraw(
+                wEth,
+                aTokenBalance - 1000n,
+                wallet.address
+            );
+            await txs.wait();
+            await randomDelay(true);
+        }
+    } catch (error) {
+        console.error("Aave ERROR: ", error);
+    }
+}
+
+export async function checkTokenBalance(token:string, owner:string, prov:string): Promise <bigint>{
+    try {
+        const provider = new ethers.JsonRpcProvider(prov);
+        const erc20 = new ethers.Contract(token, ERC20_ABI, provider);
+        const balance = await erc20.balanceOf(owner);
+        return balance;
+    } catch (error) {
+        
+    }
 }

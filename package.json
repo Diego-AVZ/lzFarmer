@@ -6,7 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node main.js",
     "createAccounts" : "ts-node src/services/createAccounts.ts",
-    "createClusters" : "ts-node src/services/createClusters.ts"
+    "createClusters" : "ts-node src/services/createClusters.ts",
+    "replace" : "ts-node src/services/replaceTxs.ts",
+    "collect" : "ts-node src/services/collectAllInEther.ts"
   },
   "repository": {
     "type": "git",
