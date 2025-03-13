@@ -26,7 +26,7 @@ LZFarmer is a modular and scalable TypeScript project designed to interact with 
 |   |   |-- txsHumanizer.ts
 |   |-- CONFIG.ts
 |   |-- main.ts
-
+```
 
 # COMMANDS
 
