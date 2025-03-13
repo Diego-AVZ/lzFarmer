@@ -12,7 +12,7 @@ export async function txsHumanizer(
     chain:number,
     rounds:number
 ) {
-    if(HUMANIZE_TXS){
+    if( HUMANIZE_TXS ){
         for(let i = 0; i < rounds; i++){
             await randomDelay(IS_TEST);
             let actionId = Math.floor(Math.random() * ONCHAIN_ACTIONS);

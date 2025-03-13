@@ -1,8 +1,12 @@
-console.log(`🟢 Starting process PID: ${process.pid}`);
-console.trace("🔍 Process started from here");
-
 import { checkEtherBalance, waitForFunding } from "./services/checkBalances";
-import { calculateMaxValue, getNativeFee, searchNetwork, prepareSendParam, prepareFeeParams, mainStargateTransfer } from "./services/stargateTransfers";
+import { 
+    calculateMaxValue, 
+    getNativeFee, 
+    searchNetwork, 
+    prepareSendParam, 
+    prepareFeeParams, 
+    mainStargateTransfer 
+} from "./services/stargateTransfers";
 import fs from 'fs';
 import path from 'path';
 import { loggerTransfer } from "./services/logger";

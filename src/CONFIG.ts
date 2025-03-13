@@ -1,13 +1,15 @@
-const CREATE_ACCOUNTS = false;
+
+// Settings 
+
 const HUMANIZE_TXS = true;
 
-const MAX_NUMBER_OF_HUMAN_TXS = 3;
-const MIN_TIME_SLEEPING = 1; // IN MINUTES
+const MAX_NUMBER_OF_HUMAN_TXS = 4;
+const MIN_TIME_SLEEPING = 2; // IN MINUTES
 const MAX_TIME_SLEEPING = 4; // IN MINUTES
 
-const INITIAL_CLUSTER = 0;
+const INITIAL_CLUSTER = 1;
 
-const NUMBER_CLUSTERS_TO_FARM = 2;
+const NUMBER_CLUSTERS_TO_FARM = 1;
 
 const IS_TEST = false;
 
@@ -25,24 +27,23 @@ const IS_TEST = false;
 const FARM_ROUTE = [
     {
         chainFrom : 3,
-        chainTo : 1,
+        chainTo : 0,
         sendAll : true
     },
     {
-        chainFrom : 1,
+        chainFrom : 0,
         chainTo : 2,
         sendAll : true
     },
     {
         chainFrom : 2,
-        chainTo : 3,
+        chainTo : 1,
         sendAll : true
     }
 ];
 
 
 export {
-    CREATE_ACCOUNTS,
     FARM_ROUTE,
     INITIAL_CLUSTER,
     NUMBER_CLUSTERS_TO_FARM,

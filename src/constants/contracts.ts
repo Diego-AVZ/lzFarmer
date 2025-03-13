@@ -69,6 +69,11 @@ const ONCHAIN_ADDRESSES = [
           chain : "arbitrum",
           protocol : "uniswap position manager",
           address : "0xC36442b4a4522E871399CD717aBDD847Ab11FE88", 
+        },
+        {
+            chain : "arbitrum",
+            protocol : "uniswap swap router",
+            address : "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", 
         }    
       ],
       tokens : [
@@ -87,6 +92,22 @@ const ONCHAIN_ADDRESSES = [
         {
           token : "WBTC",
           address : "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+        },
+        {
+          token : "LINK",
+          address : "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4"
+        },
+        {
+          token : "UNI",
+          address : "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0"
+        },
+        {
+          token : "ARB",
+          address : "0x912CE59144191C1204E64559FE8253a0e49E6548"
+        },
+        {
+          token : "ZRO",
+          address : "0x6985884C4392D348587B19cb9eAAf157F13271cd"
         }
     ]
     },
@@ -112,7 +133,12 @@ const ONCHAIN_ADDRESSES = [
           chain : "base",
           protocol : "uniswap position manager",
           address : "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1", 
-      }
+        },
+        {
+            chain : "base",
+            protocol : "uniswap swap router",
+            address : "0x2626664c2603336E57B271c5C0b26F421741e481", 
+        }
           
       ],
       tokens : [
@@ -123,7 +149,23 @@ const ONCHAIN_ADDRESSES = [
           {
             token : "USDC",
             address : "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-        }
+          },
+          {
+            token : "DAI",
+            address : "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb"
+          },
+          {
+            token : "weETH",
+            address : "0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A"
+          },
+          {
+            token : "AAVE",
+            address : "0x63706e401c06ac8513145b7687A14804d17f814b"
+          },
+          {
+            token : "ZRO",
+            address : "0x6985884C4392D348587B19cb9eAAf157F13271cd"
+          }
       ]
     },
     // OPTIMISM
@@ -162,6 +204,22 @@ const ONCHAIN_ADDRESSES = [
             {
                 token : "OP",
                 address : "0x4200000000000000000000000000000000000042"
+            },
+            {
+              token : "ZRO",
+              address : "0x6985884C4392D348587B19cb9eAAf157F13271cd"
+            },
+            {
+              token : "VELO",
+              address : "0x3c8B650257cFb5f272f799F5e2b4e65093a11a05"
+            },
+            {
+              token : "DAI",
+              address : "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1"
+            },
+            {
+              token : "LINK",
+              address : "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6"
             }
         ]
     }
@@ -174,10 +232,37 @@ export {
     ERC20_ABI,
     ONCHAIN_ADDRESSES,
     WETH_ABI,
-    AAVE_ABI
+    AAVE_ABI,
+    UNISWAP_ABI
 }
 
-const UNISWAP_ABI = [];
+const UNISWAP_ABI = [
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "tokenIn", "type": "address" },
+          { "internalType": "address", "name": "tokenOut", "type": "address" },
+          { "internalType": "uint24", "name": "fee", "type": "uint24" },
+          { "internalType": "address", "name": "recipient", "type": "address" },
+          { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+          { "internalType": "uint256", "name": "amountOutMinimum", "type": "uint256" },
+          { "internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160" }
+        ],
+        "internalType": "struct ExactInputSingleParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "exactInputSingle",
+    "outputs": [
+      { "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+]
+;
 
 const ERC20_ABI = [
     {

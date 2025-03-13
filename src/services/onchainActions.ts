@@ -18,8 +18,10 @@ export async function tokenApprovalRandom(prov:string, privateKey:string, chain:
             ONCHAIN_ADDRESSES[chain].protocols[
                 Math.floor(
                     Math.random() * (
-                        ONCHAIN_ADDRESSES[chain].protocols.length - 1
-                    ))].address,
+                        ONCHAIN_ADDRESSES[chain].protocols.length
+                    )
+                )
+            ].address,
                 Math.floor(Math.random() * 100),
                 {gasPrice : gasPrice * 115n/100n}
             );
