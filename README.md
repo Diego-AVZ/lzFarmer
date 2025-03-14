@@ -39,12 +39,12 @@ LZFarmer is a modular and scalable TypeScript project designed to interact with 
 
 ## Create Clusters
 `npm run createClusters -- Z`
--**Z** : Number of clusters to create (each cluster will contain a random number of accounts, between 3 and 8)
+- **Z** : Number of clusters to create (each cluster will contain a random number of accounts, between 3 and 8)
 
 ## Collect Funds
 `npm run collect -- I J`
--**I** : Cluster ID (0 for the first, 1 for the second, etc.)
--**J** : Destination chain ID where the funds will be sent
+- **I** : Cluster ID (0 for the first, 1 for the second, etc.)
+- **J** : Destination chain ID where the funds will be sent
 
 ## Start Execution
 `npm run start`
